@@ -11,9 +11,8 @@ from langchain_openai import ChatOpenAI
 load_dotenv()
 
 # Initialize the Stratz API client
-# It will automatically use the STRATZ_API_KEY environment variable
 try:
-    stratz_api = stratz.Api()
+    stratz_api = stratz.Api(token=os.getenv("STRATZ_API_KEY"))
 except Exception:
     # Handle case where API key might not be set initially
     stratz_api = None
