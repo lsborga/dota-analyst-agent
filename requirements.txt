@@ -1,0 +1,6 @@
+langchain
+openai
+stratz
+gradio
+gunicorn
+python-dotenv
