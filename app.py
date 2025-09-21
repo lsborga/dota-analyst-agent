@@ -142,22 +142,34 @@ def get_player_analysis(match_id, steam_id):
 # This section defines the user-facing web application.
 iface = gr.Interface(
     fn=get_player_analysis,
-    # The 'inputs' list must match the parameters of the 'fn' function.
-    # Each component in this list corresponds to one function parameter, in order.
     inputs=[
         gr.Textbox(label="Match ID"),
         gr.Textbox(label="Player Steam32 ID")
     ],
-    # The 'outputs' component displays the final result from the agent.
     outputs=gr.Textbox(label="AI Analyst Report", lines=20),
     title="Dota 2 AI Analyst Agent",
     description="Enter a Match ID and your Steam32 ID to get a detailed performance analysis from an AI expert. You can find your Steam32 ID on your Stratz.com profile.",
     allow_flagging="never"
 )
 
-# --- Launch the App ---
-# This block allows the script to be run directly for local testing (e.g., python app.py).
-# When deployed on a service like Render, the Gunicorn server will
-# directly access the 'iface' object, so this block is not executed.
+# --- FastAPI App Mounting for Deployment ---
+# We wrap the Gradio app in a FastAPI app to add a custom health check endpoint.
+from fastapi import FastAPI, Response
+
+app = FastAPI()
+
+# This is the dedicated endpoint for the health checker
+@app.get("/health")
+def health_check():
+    """Returns a 200 OK response for health checks."""
+    return Response(status_code=200, content="OK")
+
+# Mount the Gradio interface onto the FastAPI app at the root URL
+app = gr.mount_gradio_app(app, iface, path="/")
+
+# The __main__ block is for local testing (optional, not used by Render)
 if __name__ == "__main__":
-    iface.launch()
+    import uvicorn
+    # Note: Running this locally requires installing fastapi and uvicorn
+    # pip install fastapi "uvicorn[standard]"
+    uvicorn.run(app, host="0.0.0.0", port=7860)
