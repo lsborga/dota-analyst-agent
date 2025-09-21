@@ -1,6 +1,6 @@
 langchain
-openai
+langchain-openai
+python-dotenv
 stratz
 gradio
 gunicorn
-python-dotenv
