@@ -90,7 +90,7 @@ def get_player_analysis(match_id, steam_id):
         return "Error: API keys are not configured. Please ensure they are set in the environment secrets."
 
     # Initialize the LLM (the "brain" of the agent).
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4", openai_api_key=os.getenv("OPENAI_API_KEY"))
+    llm = ChatOpenAI(temperature=0, model_name="gpt-4o", openai_api_key=os.getenv("OPENAI_API_KEY"))
 
     # Define the tools the agent can use. This is the crucial link between
     # the agent's reasoning and its ability to act.
