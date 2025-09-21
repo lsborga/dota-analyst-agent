@@ -81,31 +81,31 @@ def get_match_analysis(query: str) -> str:
 # --- Main Agent Function ---
 # This function is the entry point called by the Gradio interface.
 # It orchestrates the entire process of initializing and running the agent.
+# --- Main Agent Function ---
 def get_player_analysis(match_id, steam_id):
     """
     Initializes and runs the AI agent to analyze a Dota 2 match.
     """
-    # Pre-flight check for API keys to provide a clear error message.
-    if not os.getenv("OPENAI_API_KEY") or not os.getenv("STRATZ_API_KEY"):
-        return "Error: API keys are not configured. Please ensure they are set in the environment secrets."
+    # --- CHANGE #1: Check for the new Google API Key ---
+    if not os.getenv("GOOGLE_API_KEY") or not os.getenv("STRATZ_API_KEY"):
+        return "Error: API keys are not configured. Please ensure GOOGLE_API_KEY and STRATZ_API_KEY are set."
 
-    # Initialize the LLM (the "brain" of the agent).
-    llm = ChatOpenAI(temperature=0, model_name="gpt-4o", openai_api_key=os.getenv("OPENAI_API_KEY"))
+    # --- CHANGE #2: Initialize the free Google Gemini model ---
+    llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=os.getenv("GOOGLE_API_KEY"))
 
-    # Define the tools the agent can use. This is the crucial link between
-    # the agent's reasoning and its ability to act.
+    # Define the tools the agent can use.
     tools = [
-    Tool(
-        name="Dota2MatchAnalyzer",
-        func=get_match_analysis,
-        description="""
-        Analyzes a Dota 2 match for a specific player.
-        The input for this function MUST be a single string containing the
-        match_id and the player's steam_id, separated by a comma.
-        Example: "6279293344, 91064780"
-        """
-    )
-]
+        Tool(
+            name="Dota2MatchAnalyzer",
+            func=get_match_analysis,
+            description="""
+            Analyzes a Dota 2 match for a specific player.
+            The input for this function MUST be a single string containing the
+            match_id and the player's steam_id, separated by a comma.
+            Example: "6279293344, 91064780"
+            """
+        )
+    ]
 
     # Define the agent's persona and high-level instructions.
     system_prompt = """
@@ -115,7 +115,7 @@ def get_player_analysis(match_id, steam_id):
     Provide clear, concise, and constructive feedback.
     """
 
-    # Initialize the agent, giving it the LLM, the tools, and the system prompt.
+    # Initialize the agent.
     agent = initialize_agent(
         tools,
         llm,
@@ -124,7 +124,7 @@ def get_player_analysis(match_id, steam_id):
         agent_kwargs={"prefix": system_prompt}
     )
 
-    # Construct the specific goal for this run, using the user's input.
+    # Construct the specific goal for this run.
     goal = f"""
     Please provide a strategic analysis of the player's performance in match {match_id} for the player with Steam ID {steam_id}.
     Use the Dota2MatchAnalyzer tool to get the data.

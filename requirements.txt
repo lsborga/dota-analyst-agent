@@ -4,3 +4,4 @@ python-dotenv
 stratz
 gradio
 gunicorn
+langchain-google-genai
