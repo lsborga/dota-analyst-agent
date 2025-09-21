@@ -3,7 +3,7 @@ import gradio as gr
 from dotenv import load_dotenv
 import stratz
 from langchain.agents import Tool, initialize_agent, AgentType
-from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 # --- Environment Setup ---
 # Load API keys from environment variables.
