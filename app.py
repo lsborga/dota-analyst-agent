@@ -94,7 +94,18 @@ def get_player_analysis(match_id, steam_id):
 
     # Define the tools the agent can use. This is the crucial link between
     # the agent's reasoning and its ability to act.
-    tools =
+    tools = [
+    Tool(
+        name="Dota2MatchAnalyzer",
+        func=get_match_analysis,
+        description="""
+        Analyzes a Dota 2 match for a specific player.
+        The input for this function MUST be a single string containing the
+        match_id and the player's steam_id, separated by a comma.
+        Example: "6279293344, 91064780"
+        """
+    )
+]
 
     # Define the agent's persona and high-level instructions.
     system_prompt = """
@@ -133,7 +144,10 @@ iface = gr.Interface(
     fn=get_player_analysis,
     # The 'inputs' list must match the parameters of the 'fn' function.
     # Each component in this list corresponds to one function parameter, in order.
-    inputs=,
+    inputs=[
+    gr.Textbox(label="Match ID"),
+    gr.Textbox(label="Player Steam32 ID")
+]
     # The 'outputs' component displays the final result from the agent.
     outputs=gr.Textbox(label="AI Analyst Report", lines=20),
     title="Dota 2 AI Analyst Agent",
