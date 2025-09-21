@@ -34,7 +34,7 @@ def get_match_analysis(query: str) -> str:
 
     try:
         # --- NEW: Initialize the API client inside the function ---
-        stratz_api = stratz.Api(token=os.getenv("STRATZ_API_KEY"))
+        stratz_api = stratz.Api(token=f'Bearer {os.getenv("STRATZ_API_KEY")}')
         
         # Fetch the full match data from the Stratz API.
         match = stratz_api.get_match(match_id)
