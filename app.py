@@ -52,7 +52,6 @@ def get_match_analysis(query: str) -> str:
         for p in match.players:
             if p.steam_account_id == player_steam_id:
                 player_data = p
-                break
         
         if not player_data:
             return f"Player with Steam ID {player_steam_id} not found in match {match_id}."
