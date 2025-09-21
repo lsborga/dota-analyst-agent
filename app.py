@@ -12,39 +12,30 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 # In a deployed environment (like Render), it loads from configured secrets.
 load_dotenv()
 
-# --- API Client Initialization ---
-# Initialize the Stratz API client using the key from the environment.
-# A try-except block handles the case where the key might not be set,
-# preventing the app from crashing on startup if secrets are missing.
-try:
-    stratz_api = stratz.Api(token=os.getenv("STRATZ_API_KEY"))
-except Exception:
-    stratz_api = None
 
 # --- Agent Tool Definition ---
 # This function serves as the "action" for our AI agent. It fetches and
 # processes raw data from the Stratz API.
+# --- Agent Tool Definition ---
 def get_match_analysis(query: str) -> str:
     """
     Analyzes a Dota 2 match for a specific player.
     The input for this function MUST be a single string containing the
     match_id and the player's steam_id, separated by a comma.
-    Example: "6279293344, 91064780"
+    Example: "8471429194,137863862"
     """
-    if not stratz_api:
-        return "Stratz API client is not initialized. Please check API key."
-        
     try:
         # The agent will pass a single string; we parse it here.
-        #.strip() is used to remove any accidental whitespace.
         match_id_str, steam_id_str = query.split(',')
         match_id = int(match_id_str.strip())
         player_steam_id = int(steam_id_str.strip())
     except ValueError:
-        # This error occurs if the input string is not in the expected format.
         return "Invalid input format. Please provide match_id and steam_id separated by a comma."
 
     try:
+        # --- NEW: Initialize the API client inside the function ---
+        stratz_api = stratz.Api(token=os.getenv("STRATZ_API_KEY"))
+        
         # Fetch the full match data from the Stratz API.
         match = stratz_api.get_match(match_id)
         
