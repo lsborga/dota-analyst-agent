@@ -91,7 +91,8 @@ def get_player_analysis(match_id, steam_id):
         return "Error: API keys are not configured. Please ensure GOOGLE_API_KEY and STRATZ_API_KEY are set."
 
     # --- CHANGE #2: Initialize the free Google Gemini model ---
-    llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=os.getenv("GOOGLE_API_KEY"))
+    llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=os.getenv("GOOGLE_API_KEY"))
+
 
     # Define the tools the agent can use.
     tools = [
