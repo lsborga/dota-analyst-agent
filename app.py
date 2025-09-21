@@ -2,7 +2,8 @@ import os
 import gradio as gr
 from dotenv import load_dotenv
 import stratz
-from langchain.agents import Tool, initialize_agent, AgentType
+from langchain.agents import Tool, AgentExecutor, create_tool_calling_agent
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 # --- Environment Setup ---
@@ -85,15 +86,11 @@ def get_player_analysis(match_id, steam_id):
     """
     Initializes and runs the AI agent to analyze a Dota 2 match.
     """
-    # --- CHANGE #1: Check for the new Google API Key ---
     if not os.getenv("GOOGLE_API_KEY") or not os.getenv("STRATZ_API_KEY"):
         return "Error: API keys are not configured. Please ensure GOOGLE_API_KEY and STRATZ_API_KEY are set."
 
-    # --- CHANGE #2: Initialize the free Google Gemini model ---
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash-latest", google_api_key=os.getenv("GOOGLE_API_KEY"))
 
-
-    # Define the tools the agent can use.
     tools = [
         Tool(
             name="Dota2MatchAnalyzer",
@@ -102,39 +99,38 @@ def get_player_analysis(match_id, steam_id):
             Analyzes a Dota 2 match for a specific player.
             The input for this function MUST be a single string containing the
             match_id and the player's steam_id, separated by a comma.
-            Example: "6279293344, 91064780"
+            Example: "8471429194,137863862"
             """
         )
     ]
 
-    # Define the agent's persona and high-level instructions.
-    system_prompt = """
-    You are an expert Dota 2 analyst. Your goal is to provide detailed, actionable advice to help a player improve based on their match data.
-    When analyzing a match, focus on key metrics like KDA, GPM, XPM, last hits, and item choices.
-    Relate these stats back to the hero's typical strategies and timings.
-    Provide clear, concise, and constructive feedback.
-    """
+    # This is the new, more reliable prompt structure
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", """
+        You are an expert Dota 2 analyst. Your goal is to provide detailed, actionable advice to help a player improve based on their match data.
+        When analyzing a match, focus on key metrics like KDA, GPM, XPM, last hits, and item choices.
+        Relate these stats back to the hero's typical strategies and timings.
+        Provide clear, concise, and constructive feedback. You MUST get your data from the Dota2MatchAnalyzer tool.
+        """),
+        ("user", "{input}"),
+        ("placeholder", "{agent_scratchpad}"),
+    ])
 
-    # Initialize the agent.
-    agent = initialize_agent(
-        tools,
-        llm,
-        agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-        verbose=False,
-        agent_kwargs={"prefix": system_prompt}
-    )
+    # This is the new, more modern way to build the agent
+    agent = create_tool_calling_agent(llm, tools, prompt)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
 
-    # Construct the specific goal for this run.
+    # The user's goal for the agent
     goal = f"""
     Please provide a strategic analysis of the player's performance in match {match_id} for the player with Steam ID {steam_id}.
-    Use the Dota2MatchAnalyzer tool to get the data.
-    Based on the data, explain their performance, highlighting strengths and areas for improvement.
+    Do not make up any information. Use the Dota2MatchAnalyzer tool to get all the data.
+    Based on the real data from the tool, explain their performance, highlighting strengths and areas for improvement.
     """
 
     try:
-        # Execute the agent with the defined goal.
-        response = agent.run(goal)
-        return response
+        # Execute the agent and get the final response
+        response = agent_executor.invoke({"input": goal})
+        return response['output']
     except Exception as e:
         return f"An error occurred while running the agent: {e}"
 
