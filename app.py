@@ -105,6 +105,9 @@ def get_player_analysis(match_id, steam_id):
     """
 
     try:
+        # The agent expects a single input string, so we combine the IDs.
+        # The agent's reasoning will then use the tool with the correct combined format.
+        combined_input = f"{match_id}, {steam_id}"
         response = agent.run(goal)
         return response
     except Exception as e:
