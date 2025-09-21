@@ -145,9 +145,9 @@ iface = gr.Interface(
     # The 'inputs' list must match the parameters of the 'fn' function.
     # Each component in this list corresponds to one function parameter, in order.
     inputs=[
-    gr.Textbox(label="Match ID"),
-    gr.Textbox(label="Player Steam32 ID")
-]
+        gr.Textbox(label="Match ID"),
+        gr.Textbox(label="Player Steam32 ID")
+    ],
     # The 'outputs' component displays the final result from the agent.
     outputs=gr.Textbox(label="AI Analyst Report", lines=20),
     title="Dota 2 AI Analyst Agent",
